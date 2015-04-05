@@ -2,8 +2,12 @@ require 'sinatra'
 require 'json'
 
 class GemMinerService < Sinatra::Base
+  configure :production, :development do
+    enable :logging
+  end
+
   get '/' do
-    'GemMiner up and working'
+    'GemMiner up and working<br> POST messages to /notification'
   end
 
   # Listen to SNS for subscription request or message notifications
@@ -19,6 +23,8 @@ class GemMinerService < Sinatra::Base
         logger.info "SUBSCRIBE: URL: [#{sns_confirm_url}], Confirm: [#{sns_confirmation}]"
       when 'Notification'
         logger.info "MESSAGE: Subject: [#{sns_note['Subject']}], Body: [#{sns_note['Message']}]"
+      else
+        raise "Invalid SNS Message Type (#{sns_msg_type})"
       end
     rescue => e
       logger.error e
