@@ -16,8 +16,9 @@ class GemMinerService < Sinatra::Base
       when 'SubscriptionConfirmation'
         sns_confirm_url = sns_note['SubscribeURL']
         sns_confirmation = HTTParty.get sns_confirm_url
+        logger.info "SUBSCRIBE: URL: [#{sns_confirm_url}], Confirm: [#{sns_confirmation}]"
       when 'Notification'
-        save_message sns_note['Subject'], sns_note['Message']
+        logger.info "MESSAGE: Subject: [#{sns_note['Subject']}], Body: [#{sns_note['Message']}]"
       end
     rescue => e
       logger.error e
