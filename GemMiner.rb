@@ -1,13 +1,14 @@
 require 'gems'
-require 'sinatra'
+
 =begin
+usage:
 first create a ~/.gem/credentials as below
 ---
 :rubygems_api_key: XXXXXXX
 =end
 
 # get { gem_name:=> { version:=> { date:=>download_times } } }
-class GemMiner < Sinatra::Base
+class GemMiner
 
 	# initialize the class with the gem_name
 	def initialize(gem_name)

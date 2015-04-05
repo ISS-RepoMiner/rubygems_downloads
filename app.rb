@@ -1,7 +1,8 @@
+require "./GemMiner.rb"
 
 all_hash=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
 
-a=Gems_downloads.new "ltp_checker"
+a=GemMiner.new "ltp_checker"
 
 hash=a.get_versions
 
