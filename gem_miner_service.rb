@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'httparty'
 require 'json'
 
 class GemMinerService < Sinatra::Base
