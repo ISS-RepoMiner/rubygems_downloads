@@ -15,6 +15,9 @@ class GemMiner
 		@gem_name = gem_name
 	end
 
+	# scan gem name
+
+
 	# call the method to get what needed in a hash format
 	def get_versions
 		hash=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
@@ -24,12 +27,22 @@ class GemMiner
 			downloads.each do |k,v|
 				hash[@gem_name.to_s][ver["number"]][k] = v
 			end
-			# File.open("test", "a") do |aFile|
-			# 	result = @gem_name+ver["number"]+downloads.to_s
-			# 	aFile.syswrite(result)
-			# end
 		end
 		return hash
 	end
 
+	# call the method to get the updating downloads time ( yesterday )
+	def get_yesterday_downloads
+		hash=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
+		vers = Gems.versions @gem_name
+		vers.each do |ver|
+			downloads = Gems.downloads @gem_name, ver["number"], Date.today-1, Date.today-1
+			downloads.each do |k,v|
+				hash[@gem_name][ver["number"]][k] = v
+			end
+		end
+		return hash
+	end
 end
+
+
