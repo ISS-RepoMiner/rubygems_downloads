@@ -13,6 +13,7 @@ class GemMinerService < Sinatra::Base
   # Listen to SNS for subscription request or message notifications
   post '/notification' do
     begin
+      logger.info 'MESSAGE ARRIVING'
       sns_msg_type = request.env["HTTP_X_AMZ_SNS_MESSAGE_TYPE"]
       sns_note = JSON.parse request.body.read
 
