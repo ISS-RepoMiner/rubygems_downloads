@@ -13,10 +13,14 @@ GEM
     daemons (1.2.2)
     eventmachine (1.0.7)
     gems (0.8.3)
+    httparty (0.13.3)
+      json (~> 1.8)
+      multi_xml (>= 0.5.2)
     jmespath (1.0.2)
       multi_json (~> 1.0)
     json (1.8.2)
     multi_json (1.11.0)
+    multi_xml (0.5.5)
     rack (1.6.0)
     rack-protection (1.5.3)
       rack
@@ -36,6 +40,7 @@ PLATFORMS
 DEPENDENCIES
   aws-sdk (~> 2)
   gems
+  httparty
   json
   sinatra
   thin
