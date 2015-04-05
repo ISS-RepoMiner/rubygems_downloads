@@ -2,14 +2,15 @@ require "./GemMiner.rb"
 
 all_hash=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
 
-a=GemMiner.new "rails"
-
+a=GemMiner.new "movie_crawler"
+# puts a.get_vers_list
+puts a.get_versions_downloads_list
 # hash=a.get_versions
-hash=a.get_yesterday_downloads
+puts a.get_yesterday_downloads
 
-all_hash.merge!(hash)
+# all_hash.merge!(hash)
 
-puts all_hash
+# puts all_hash
 
 
 
