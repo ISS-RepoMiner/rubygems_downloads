@@ -1,5 +1,4 @@
 require 'gems'
-require 'sinatra'
 =begin
 first create a ~/.gem/credentials as below
 ---
@@ -7,8 +6,8 @@ first create a ~/.gem/credentials as below
 =end
 
 # get { gem_name:=> { version:=> { date:=>download_times } } }
-class GemMiner < Sinatra::Base
-
+class Gems_downloads
+	
 	# initialize the class with the gem_name
 	def initialize(gem_name)
 		@gem_name = gem_name
@@ -42,3 +41,4 @@ hash=a.get_versions
 all_hash.merge!(hash)
 
 puts all_hash
+
