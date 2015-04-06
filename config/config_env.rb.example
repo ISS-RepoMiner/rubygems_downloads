@@ -1,0 +1,8 @@
+config_env :production do
+  # AWS SNS Topic for messages that are pushed to our service
+  set 'TopicArn', 'arn:aws:sns:us-east-1:[ACCOUNT_NUMBER]:ruby_gem_miner_wakeup'
+end
+
+config_env :development, :test do
+  set 'TopicArn', 'arn:aws:sns:eu-central-1:[ACCOUNT_NUMBER]:ruby_gem_miner_wakeup'
+end
