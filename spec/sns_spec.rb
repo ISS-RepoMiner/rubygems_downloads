@@ -24,6 +24,19 @@ describe 'SNS Subscription' do
     last_response.status.must_equal 200
   end
 
+  it 'should return 200 for SubscriptionConfirmation message type' do
+    header = { 'CONTENT_TYPE' => 'text/html',
+               'HTTP_X_AMZ_SNS_MESSAGE_TYPE' => 'SubscriptionConfirmation'}
+    body = {
+      'TopicArn' => ENV['WakeupTopicArn']
+    }
+
+    post '/notification', body.to_json, header
+
+    # TODO: stub and test SubscriptionConfirmation message
+    last_response.status.must_equal 200
+  end
+
   it 'should return 400 for unknown message type' do
     header = { 'CONTENT_TYPE' => 'text/html',
                'HTTP_X_AMZ_SNS_MESSAGE_TYPE' => 'UnknownType'}
@@ -36,6 +49,4 @@ describe 'SNS Subscription' do
 
     last_response.status.must_equal 400
   end
-
-  # TODO: stub and test SubscriptionConfirmation message
 end
