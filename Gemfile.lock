@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.3.8)
     aws-sdk (2.0.34)
       aws-sdk-resources (= 2.0.34)
     aws-sdk-core (2.0.34)
@@ -10,6 +11,8 @@ GEM
     aws-sdk-resources (2.0.34)
       aws-sdk-core (= 2.0.34)
     builder (3.2.2)
+    crack (0.4.2)
+      safe_yaml (~> 1.0.0)
     daemons (1.2.2)
     eventmachine (1.0.7)
     gems (0.8.3)
@@ -19,11 +22,13 @@ GEM
     jmespath (1.0.2)
       multi_json (~> 1.0)
     json (1.8.2)
+    minitest (5.5.1)
     multi_json (1.11.0)
     multi_xml (0.5.5)
     rack (1.6.0)
     rack-protection (1.5.3)
       rack
+    safe_yaml (1.0.4)
     sinatra (1.4.6)
       rack (~> 1.4)
       rack-protection (~> 1.4)
@@ -33,6 +38,9 @@ GEM
       eventmachine (~> 1.0)
       rack (~> 1.0)
     tilt (2.0.1)
+    webmock (1.21.0)
+      addressable (>= 2.3.6)
+      crack (>= 0.3.2)
 
 PLATFORMS
   ruby
@@ -42,5 +50,7 @@ DEPENDENCIES
   gems
   httparty
   json
+  minitest
   sinatra
   thin
+  webmock

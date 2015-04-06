@@ -34,6 +34,7 @@ class GemMinerService < Sinatra::Base
         sns_confirm_url = sns_note['SubscribeURL']
         sns_confirmation = HTTParty.get sns_confirm_url
         logger.info "SUBSCRIBE: URL: [#{sns_confirm_url}], Confirm: [#{sns_confirmation}]"
+        halt 403, 'Invalid SubscribeURL' unless sns_confirmation.code == 200
       when 'Notification'
         # TODO: handle wakeup message
         logger.info "MESSAGE: Subject: [#{sns_note['Subject']}], Body: [#{sns_note['Message']}]"
