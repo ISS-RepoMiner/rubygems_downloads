@@ -12,6 +12,10 @@ class GemMinerService < Sinatra::Base
     ConfigEnv.path_to_config("#{__dir__}/config/config_env.rb")
   end
 
+  configure do
+    set :gem_queue GemMinerQueue.new(ENV['SQS_GEM_QUEUE'], logger)
+  end
+
   get '/' do
     'GemMiner up and working<br> POST messages to /notification'
   end
