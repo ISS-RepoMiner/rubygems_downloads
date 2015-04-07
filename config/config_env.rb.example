@@ -8,6 +8,14 @@ config_env do
 end
 
 config_env :production do
+  # AWS Region: US East (N. Virginia)
+  set 'AWS_REGION', 'us-east-1'
+
   # AWS SNS Topic for messages that are pushed to our service
   set 'TopicArn', 'arn:aws:sns:us-east-1:[ACCOUNT_NUMBER]:ruby_gem_miner_wakeup'
+end
+
+config_env :development, :test do
+  # AWS Region: EU Central (Frankfurt)
+  set 'AWS_REGION', 'eu-central-1'
 end
