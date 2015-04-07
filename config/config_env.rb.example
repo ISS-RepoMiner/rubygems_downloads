@@ -1,8 +1,13 @@
+# Create config file from this template file
+# 1. copy this file to config/config_env.rb
+# 2. replace [*] below with corresponding keys/numbers/ids
+
+config_env do
+  set 'AWS_ACCESS_KEY_ID', '[ACCESS_KEY_ID]'
+  set 'AWS_SECRET_ACCESS_KEY', '[ACCESS_KEY]'
+end
+
 config_env :production do
   # AWS SNS Topic for messages that are pushed to our service
   set 'TopicArn', 'arn:aws:sns:us-east-1:[ACCOUNT_NUMBER]:ruby_gem_miner_wakeup'
-end
-
-config_env :development, :test do
-  set 'TopicArn', 'arn:aws:sns:eu-central-1:[ACCOUNT_NUMBER]:ruby_gem_miner_wakeup'
 end
