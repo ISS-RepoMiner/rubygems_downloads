@@ -63,5 +63,3 @@ class GemMiner
 		@hash
 	end
 end
-
-
