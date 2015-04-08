@@ -2,6 +2,7 @@ require 'sinatra'
 require 'httparty'
 require 'json'
 require 'config_env'
+require './pull-queue'
 
 class GemMinerService < Sinatra::Base
   configure :production, :development do
@@ -13,7 +14,7 @@ class GemMinerService < Sinatra::Base
   end
 
   configure do
-    set :gem_queue GemMinerQueue.new(ENV['SQS_GEM_QUEUE'], logger)
+    set :gem_queue, GemMinerQueue.new(ENV['SQS_GEM_QUEUE'], logger)
   end
 
   get '/' do
@@ -24,13 +25,13 @@ class GemMinerService < Sinatra::Base
   post '/notification' do
     begin
       logger.info 'MESSAGE ARRIVING'
-      sns_msg_type = request.env["HTTP_X_AMZ_SNS_MESSAGE_TYPE"]
+      sns_msg_type = request.env['HTTP_X_AMZ_SNS_MESSAGE_TYPE']
       sns_note = JSON.parse request.body.read
 
-      topicARN = sns_note['TopicArn']
-      if topicARN != ENV['WakeupTopicArn']
-        logger.info "UNAUTHORIZED ACCESS (ARN): #{topicARN}"
-        halt 403, "Unauthorized Topic ARN"
+      topic_arn = sns_note['TopicArn']
+      if topic_arn != ENV['WakeupTopicArn']
+        logger.info "UNAUTHORIZED ACCESS (ARN): #{topic_arn}"
+        halt 403, 'Unauthorized Topic ARN'
       end
 
       case sns_msg_type
@@ -43,11 +44,11 @@ class GemMinerService < Sinatra::Base
         # TODO: handle wakeup message
         logger.info "MESSAGE: Subject: [#{sns_note['Subject']}], Body: [#{sns_note['Message']}]"
       else
-        raise "Invalid SNS Message Type (#{sns_msg_type})"
+        fail "Invalid SNS Message Type (#{sns_msg_type})"
       end
     rescue => e
       logger.error e
-      halt 400, "Could not fully process SNS notification"
+      halt 400, 'Could not fully process SNS notification'
       return
     end
 
