@@ -2,7 +2,7 @@ require 'sinatra'
 require 'httparty'
 require 'json'
 require 'config_env'
-require_relative './pull_queue'
+require_relative './gem_map_queue'
 
 module GemMiner
   class MiningService < Sinatra::Base
