@@ -8,5 +8,5 @@ require_relative '../gem_miner_service'
 include Rack::Test::Methods
 
 def app
-  GemMinerService
+  GemMiner::MiningService
 end

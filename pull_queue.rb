@@ -2,6 +2,8 @@ require 'aws-sdk'
 
 module GemMiner
   class GemMapQueue
+    attr_writer :logger
+
     def initialize(queue_name, logger = nil)
       @sqs = Aws::SQS::Client.new(region: ENV['AWS_REGION'])
       @queue_url = @sqs.get_queue_url(queue_name: queue_name).queue_url
