@@ -16,7 +16,7 @@ module GemMiner
     end
 
     configure :test do
-      set :gem_queue, GemMapQueue.new
+      set :gem_queue, nil
     end
 
     before do
@@ -47,7 +47,7 @@ module GemMiner
           halt 403, 'Invalid SubscribeURL' unless sns_confirmation.code == 200
         when 'Notification'
           logger.info "MESSAGE: Subject: [#{sns_note['Subject']}], Body: [#{sns_note['Message']}]"
-          yield
+          yield sns_note['Message']
         else
           fail "Invalid SNS Message Type (#{sns_msg_type})"
         end
@@ -63,7 +63,11 @@ module GemMiner
     # Listen to SNS for subscription request or message notifications
     post '/notification' do
       handle_notification do |msg|
-        # TODO: handle messages
+        puts "#{settings.gem_queue.messages_available} gems found"
+        settings.gem_queue.poll_batch do |gems_map|
+          # TODO: handle gems here
+          # puts "Gems: #{gems_map}"
+        end
       end
     end
   end

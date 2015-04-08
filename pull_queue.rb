@@ -36,7 +36,7 @@ module GemMiner
       log_error(e, 'Could not get number of messages from queue')
     end
 
-    def poll(batch_size, &message_handler)
+    def poll(&_message_handler)
       poller = Aws::SQS::QueuePoller.new(@queue_url)
       poller.poll(max_number_of_messages: batch_size,
                   wait_time_seconds: 0,
@@ -71,13 +71,4 @@ end
 #
 # q.poll_batch(batch_size = 10) do |msg|
 #  puts "MSG: #{msg}"
-# end
-#
-#
-# letters = ('a'..'z').take(26)
-#
-# 100.times.map do |i|
-#   body = letters.sample(10).join
-#   sqs.send_message(queue_url: queue_url, message_body: body)
-#   print "#{i} "
 # end
