@@ -8,7 +8,7 @@ describe 'GemMinerService specifications' do
 
   it 'should return 200 for Notification message type' do
     header = { 'CONTENT_TYPE' => 'text/html',
-               'HTTP_X_AMZ_SNS_MESSAGE_TYPE' => 'Notification'}
+               'HTTP_X_AMZ_SNS_MESSAGE_TYPE' => 'Notification' }
     body = {
       'TopicArn' => ENV['WakeupTopicArn']
     }
@@ -16,25 +16,26 @@ describe 'GemMinerService specifications' do
     FakeQueue = Class.new do
       attr_writer :logger
 
-      def messages_available
-        10
-      end
-
-      def poll_batch(&_message_handler)
-        gem_name = ('a'..'z').take(26).sample(7).join
-        yield gem_name
-      end
-
-      def poll_batch(batch_size = 10, &_message_handler)
+      def initialize
         letters = ('a'..'z').take(26)
 
-        Random.rand(2..5).times do
-          gems_map = Random.rand(1..batch_size).times.map do |i|
+        @gems_map_arr = Random.rand(2..5).times.map do
+          Random.rand(1..10).times.map do
             letters.sample(7).join
           end
-
-          yield gems_map
         end
+      end
+
+      def messages_available
+        @gems_map_arr.reduce(0) { |a, e| a + e.length }
+      end
+
+      def poll(&_message_handler)
+        @gems_map_arr.flatten!.length.times { yield @gems_map_arr.shift }
+      end
+
+      def poll_batch(_batch_size = 10, &_message_handler)
+        @gems_map_arr.length.times { yield @gems_map_arr.shift }
       end
     end
 
@@ -42,6 +43,5 @@ describe 'GemMinerService specifications' do
 
     post '/notification', body.to_json, header
     last_response.status.must_equal 200
-
   end
 end
