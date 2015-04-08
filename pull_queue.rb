@@ -4,10 +4,14 @@ module GemMiner
   class GemMapQueue
     attr_writer :logger
 
-    def initialize(queue_name, logger = nil)
+    def initialize(queue_name = nil, logger = nil)
+      setup_queue(queue_name) if queue_name
+      @logger = logger
+    end
+
+    def setup_queue(queue_name)
       @sqs = Aws::SQS::Client.new(region: ENV['AWS_REGION'])
       @queue_url = @sqs.get_queue_url(queue_name: queue_name).queue_url
-      @logger = logger
     rescue => e
       log_error(e, 'Could not connect to queue')
     end

@@ -2,7 +2,6 @@ require 'sinatra'
 require 'httparty'
 require 'json'
 require 'config_env'
-require 'logger'
 require_relative './pull_queue'
 
 module GemMiner
@@ -11,9 +10,13 @@ module GemMiner
       ConfigEnv.path_to_config("#{__dir__}/config/config_env.rb")
     end
 
-    configure do
-      enable :logging
+    configure :production, :development do
       set :gem_queue, GemMapQueue.new(ENV['SQS_GEM_QUEUE'])
+      enable :logging
+    end
+
+    configure :test do
+      set :gem_queue, GemMapQueue.new
     end
 
     before do
