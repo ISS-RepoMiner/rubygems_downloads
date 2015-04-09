@@ -62,7 +62,7 @@ module GemMiner
       handle_notification do |msg|
         # TODO: handle notification here (example in next 5 lines)
         puts "#{settings.gem_queue.messages_available} gems found"
-        settings.gem_queue.poll_batch do |gems_map|
+        settings.gem_queue.poll_batch(batch_size=10) do |gems_map|
           # TODO: handle gems here (example in next line)
           puts "Gems: #{gems_map}"
         end
