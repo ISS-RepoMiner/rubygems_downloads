@@ -26,14 +26,21 @@ class GemMiner
 		vers_list
 	end
 
+
+
 	# check the downloads of a version series
 	def get_ver_downloads(ver)
 		Gems.downloads @gem_name, ver
 	end
 
+	# check date downloads for specific version,date format "2014-12-05"
+	def get_ver_downloads_by_date(ver,date)
+		Gems.downloads @gem_name, ver, date,date
+	end
+
 	# get yesterday downloads of a specific version
 	def get_ver_yesterday_downloads (ver)
-		downloads = Gems.downloads @gem_name, ver, Date.today-1, Date.today-1		
+		downloads = Gems.downloads @gem_name, ver, Date.today-1, Date.today-1
 	end
 
 	# save the downloads data to a structured hash_table
