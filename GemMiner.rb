@@ -14,6 +14,7 @@ class GemMiner
 	def initialize(gem_name)
 		@gem_name = gem_name
 		@hash=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
+		# @gem_info={}
 	end
 
 	# scan all the versions of a gem
@@ -74,4 +75,11 @@ class GemMiner
 		end
 		@hash
 	end
+
+	# related information
+	def get_info
+		gem_info = Gems.info @gem_name
+		gem_info
+	end
+
 end
