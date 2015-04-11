@@ -21,7 +21,7 @@ class GemMiner
 		vers = Gems.versions @gem_name
 		vers_list=[]
 		vers.each do |ver|
-			vers_list << ver["number"]
+			vers_list << [ver["number"],ver["built_at"]]
 		end
 		vers_list
 	end
@@ -53,6 +53,7 @@ class GemMiner
 	# call the method to get what needed in a hash format
 	def get_versions_downloads_list
 		vers_list = get_vers_list
+
 		vers_list.each do |ver|
 			downloads = get_ver_downloads(ver)
 			save_to_hash(downloads,ver)
