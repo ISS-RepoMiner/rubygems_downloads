@@ -19,19 +19,23 @@ class GemMiner
 	# scan all the versions of a gem
 	def get_vers_list
 		vers = Gems.versions @gem_name
-		vers_list=[]
+		vers_list={}
 		vers.each do |ver|
-			vers_list << [ver["number"],ver["built_at"]]
+			vers_list[ver["number"]]=ver["built_at"]
 		end
 		vers_list
 	end
-
-
 
 	# check the downloads of a version series
 	def get_ver_downloads(ver)
 		Gems.downloads @gem_name, ver
 	end
+
+	def get_ver_history_downloads_series(ver)
+		vers_list=get_vers_list
+		Gems.downloads @gem_name, ver, vers_list[ver],Date.today-1
+	end
+
 
 	# check date downloads for specific version,date format "2014-12-05"
 	def get_ver_downloads_by_date(ver,date)
@@ -54,8 +58,8 @@ class GemMiner
 	def get_versions_downloads_list
 		vers_list = get_vers_list
 
-		vers_list.each do |ver|
-			downloads = get_ver_downloads(ver)
+		vers_list.each do |ver,built_at|
+			downloads = get_ver_history_downloads_series(ver)
 			save_to_hash(downloads,ver)
 		end
 		@hash
@@ -63,7 +67,7 @@ class GemMiner
 
 	# call the method to get the updating downloads time ( yesterday )
 	def get_yesterday_downloads
-		vers_list = get_vers_list
+		vers_list = get_vers_list.keys
 		vers_list.each do |ver|
 			downloads = get_ver_yesterday_downloads(ver)
 			save_to_hash(downloads,ver)
