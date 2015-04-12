@@ -3,15 +3,14 @@ require_relative "GemMiner"
 gem_map = ['retailigence', 'localizer', 'roopap', 'jekyll-minifier', 'vagrant-parallels', 'phidgets-ffi', 'dropbox-api']
 
 gem_map = ['dropbox-api']
-def get_gem_downloads(gem_map)
-  downloads = gem_map.map do |gem_name|
-    rubygem = GemMiner.new(gem_name)
-    rubygem.get_info
-    yesterday = rubygem.get_yesterday_downloads
-    non_zero_dl = yesterday[gem_name].select { |ver, dls| dls.first[1] > 0 }
-    {gem_name => non_zero_dl}
-  end
+def get_gem_downloads(gem_name)
+  rubygem = GemMiner.new(gem_name)
+  rubygem.get_info
+  yesterday = rubygem.get_yesterday_downloads
+  non_zero_dl = yesterday[gem_name].select { |ver, dls| dls.first[1] > 0 }
+  {gem_name => non_zero_dl}
 end
+
 
 # require "ftools"
 #
