@@ -34,7 +34,7 @@ class GemMiner
 
 	def get_ver_history_downloads_series(ver)
 		vers_list=get_vers_list
-		Gems.downloads @gem_name, ver, vers_list[ver],Date.today-1
+		Gems.downloads @gem_name, ver, vers_list[ver],Date.today-2
 	end
 
 
@@ -45,7 +45,7 @@ class GemMiner
 
 	# get yesterday downloads of a specific version
 	def get_ver_yesterday_downloads (ver)
-		downloads = Gems.downloads @gem_name, ver, Date.today-1, Date.today-1
+		downloads = Gems.downloads @gem_name, ver, Date.today-2, Date.today-2
 	end
 
 	# save the downloads data to a structured hash_table
