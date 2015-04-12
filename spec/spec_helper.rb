@@ -4,8 +4,7 @@ require 'minitest/autorun'
 require 'rack/test'
 require 'webmock/minitest'
 
-
-require_relative '../gem_miner_service'
+require_relative '../app'
 
 include Rack::Test::Methods
 

@@ -1,2 +1,2 @@
-require './gem_miner_service.rb'
+require './app.rb'
 run GemMiner::MiningService
