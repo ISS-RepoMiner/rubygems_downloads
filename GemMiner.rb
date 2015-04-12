@@ -82,4 +82,10 @@ class GemMiner
 		gem_info
 	end
 
+	# historical dependencies
+	def get_dependencies
+		gem_dependencies = Gems.dependencies [@gem_name]
+		gem_dependencies
+	end
+
 end
