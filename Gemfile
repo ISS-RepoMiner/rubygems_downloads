@@ -19,4 +19,4 @@ group :test do
 end
 
 gem 'gems'
-gem 'ftools'
+gem 'concurrent-ruby-ext'
