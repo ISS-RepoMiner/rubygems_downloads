@@ -1,4 +1,5 @@
 require 'gems'
+require 'concurrent'
 
 =begin
 usage:
@@ -9,21 +10,26 @@ first create a ~/.gem/credentials as below
 
 # get { gem_name:=> { version:=> { date:=>download_times } } }
 class GemMiner
+  attr_reader :versions
 
   # initialize the class with the gem_name, input and output formulation
   def initialize(gem_name)
     @gem_name = gem_name
     @all_downloads=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
     @yesterday_downloads=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
+    get_all_versions
     # @gem_info={}
   end
 
   # scan all the versions of a gem
+  def get_all_versions
+    @versions ||= Gems.versions @gem_name
+  end
+
   def get_vers_list
-    vers = Gems.versions @gem_name
-    vers_list={}
-    vers.each do |ver|
-      vers_list[ver["number"]]=ver["built_at"]
+    vers_list = {}
+    get_all_versions.map do |ver|
+      vers_list[ver['number']] = ver['built_at']
     end
     vers_list
   end
@@ -34,14 +40,12 @@ class GemMiner
   end
 
   def get_ver_history_downloads_series(ver)
-    vers_list=get_vers_list
-    Gems.downloads @gem_name, ver, vers_list[ver],Date.today-1
+    Gems.downloads @gem_name, ver, @versions[ver],Date.today-1
   end
-
 
   # check date downloads for specific version,date format "2014-12-05"
   def get_ver_downloads_by_date(ver,date)
-    Gems.downloads @gem_name, ver, date,date
+    Gems.downloads @gem_name, ver, date, date
   end
 
   # get yesterday downloads of a specific version
@@ -64,9 +68,7 @@ class GemMiner
 
   # call the method to get what needed in a hash format
   def get_versions_downloads_list
-    vers_list = get_vers_list
-
-    vers_list.each do |ver,built_at|
+    @versions.each do |ver, built_at|
       downloads = get_ver_history_downloads_series(ver)
       save_all_downloads(downloads,ver)
     end
@@ -75,23 +77,47 @@ class GemMiner
 
   # call the method to get the updating downloads time ( yesterday )
   def get_yesterday_downloads
-    vers_list = get_vers_list.keys
-    vers_list.each do |ver|
+    @versions.keys.each do |ver|
       downloads = get_ver_yesterday_downloads(ver)
       save_yesterday_downloads(downloads,ver)
     end
     @yesterday_downloads
   end
 
-  def get_yesterday_downloads_threaded
-    vers_list = get_vers_list.keys
-    threads = vers_list.map do |ver|
-      threads << Thread.new do
+  def get_yesterday_downloads_autothreaded
+    threads = @versions.keys.map do |ver|
+      Thread.new do
         downloads = get_ver_yesterday_downloads(ver)
         save_yesterday_downloads(downloads,ver)
       end
     end
     threads.map(&:join)
+    @yesterday_downloads
+  end
+
+  def get_yesterday_downloads_threaded(num_threads=15)
+    # vers_list = get_vers_list.keys
+    # threads = vers_list.map do |ver|
+    #   threads << Thread.new do
+    #     downloads = get_ver_yesterday_downloads(ver)
+    #     save_yesterday_downloads(downloads,ver)
+    #   end
+    # end
+    # threads.map(&:join)
+
+    threads = Concurrent::FixedThreadPool.new(num_threads)
+    lock = Mutex.new
+
+    @versions.keys.each do |ver|
+      threads.post do
+        downloads = get_ver_yesterday_downloads(ver)
+        lock.synchronize do
+          save_yesterday_downloads(downloads, ver)
+        end
+      end
+    end
+    threads.shutdown
+    threads.wait_for_termination
     @yesterday_downloads
   end
 
