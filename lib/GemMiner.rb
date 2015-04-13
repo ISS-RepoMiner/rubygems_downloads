@@ -107,7 +107,7 @@ class GemMiner
   end
 
   def get_yesterday_downloads_cachethreaded
-    threads = Concurrent::CachedThreadPool
+    threads = Concurrent::CachedThreadPool.new
     lock = Mutex.new
 
     @version_dates.keys.each do |ver|
