@@ -13,7 +13,8 @@ class GemMiner
   # initialize the class with the gem_name, input and output formulation
   def initialize(gem_name)
     @gem_name = gem_name
-    @hash=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
+    @all_downloads=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
+    @yesterday_downloads=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
     # @gem_info={}
   end
 
@@ -49,9 +50,15 @@ class GemMiner
   end
 
   # save the downloads data to a structured hash_table
-  def save_to_hash(downloads,ver)
+  def save_all_downloads(downloads,ver)
     downloads.each do |k,v|
-      @hash[@gem_name][ver][k] = v
+      @all_downloads[@gem_name][ver][k] = v
+    end
+  end
+
+  def save_yesterday_downloads(downloads, ver)
+    downloads.each do |k,v|
+      @yesterday_downloads[@gem_name][ver][k] = v
     end
   end
 
@@ -61,9 +68,9 @@ class GemMiner
 
     vers_list.each do |ver,built_at|
       downloads = get_ver_history_downloads_series(ver)
-      save_to_hash(downloads,ver)
+      save_all_downloads(downloads,ver)
     end
-    @hash
+    @all_downloads
   end
 
   # call the method to get the updating downloads time ( yesterday )
@@ -71,9 +78,21 @@ class GemMiner
     vers_list = get_vers_list.keys
     vers_list.each do |ver|
       downloads = get_ver_yesterday_downloads(ver)
-      save_to_hash(downloads,ver)
+      save_yesterday_downloads(downloads,ver)
     end
-    @hash
+    @yesterday_downloads
+  end
+
+  def get_yesterday_downloads_threaded
+    vers_list = get_vers_list.keys
+    threads = vers_list.map do |ver|
+      threads << Thread.new do
+        downloads = get_ver_yesterday_downloads(ver)
+        save_yesterday_downloads(downloads,ver)
+      end
+    end
+    threads.map(&:join)
+    @yesterday_downloads
   end
 
   # related information
