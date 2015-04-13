@@ -11,7 +11,6 @@ class GemMiner
     @all_downloads=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
     @yesterday_downloads=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
     get_all_versions
-    # @gem_info={}
   end
 
   # scan all the versions of a gem
