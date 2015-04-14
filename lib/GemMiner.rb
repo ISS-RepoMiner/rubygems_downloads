@@ -3,7 +3,7 @@ require 'concurrent'
 
 # Gets gem information from rubygems.org (wrapper for Gems gem)
 class GemMiner
-  attr_reader :versions, :version_dates
+  attr_reader :versions, :version_dates, :yesterday_downloads
 
   # initialize the class with the gem_name, input and output formulation
   def initialize(gem_name)
@@ -54,8 +54,8 @@ class GemMiner
   end
 
   def save_yesterday_downloads(downloads, ver)
-    downloads.each do |k,v|
-      @yesterday_downloads[@gem_name][ver][k] = v
+    downloads.each do |date, number|
+      @yesterday_downloads[@gem_name][ver][date] = number if number > 0
     end
   end
 
@@ -63,7 +63,7 @@ class GemMiner
   def get_versions_downloads_list
     @version_dates.each do |ver, built_at|
       downloads = get_ver_history_downloads_series(ver)
-      save_all_downloads(downloads,ver)
+      save_all_downloads(downloads, ver)
     end
     @all_downloads
   end
@@ -72,16 +72,18 @@ class GemMiner
   def get_yesterday_downloads
     @version_dates.keys.each do |ver|
       downloads = get_ver_yesterday_downloads(ver)
-      save_yesterday_downloads(downloads,ver)
+      save_yesterday_downloads(downloads, ver)
     end
     @yesterday_downloads
   end
 
   def get_yesterday_downloads_autothreaded
-    threads = @version_dates.keys.map do |ver|
-      Thread.new do
-        downloads = get_ver_yesterday_downloads(ver)
-        save_yesterday_downloads(downloads,ver)
+    threads = @version_dates.keys.map do |version|
+      Thread.new(version) do |version_th|
+        downloads = get_ver_yesterday_downloads(version_th)
+        lock.synchronize do
+          save_yesterday_downloads(downloads, version_th)
+        end
       end
     end
     threads.map(&:join)
@@ -92,11 +94,11 @@ class GemMiner
     threads = Concurrent::FixedThreadPool.new(num_threads)
     lock = Mutex.new
 
-    @version_dates.keys.each do |ver|
-      threads.post do
-        downloads = get_ver_yesterday_downloads(ver)
+    @version_dates.keys.each do |version|
+      threads.post(version) do |version_th|
+        downloads = get_ver_yesterday_downloads(version_th)
         lock.synchronize do
-          save_yesterday_downloads(downloads, ver)
+          save_yesterday_downloads(downloads, version_th)
         end
       end
     end
@@ -109,11 +111,11 @@ class GemMiner
     threads = Concurrent::CachedThreadPool.new
     lock = Mutex.new
 
-    @version_dates.keys.each do |ver|
-      threads.post do
-        downloads = get_ver_yesterday_downloads(ver)
+    @version_dates.keys.each do |version|
+      threads.post(version) do |version_th|
+        downloads = get_ver_yesterday_downloads(version_th)
         lock.synchronize do
-          save_yesterday_downloads(downloads, ver)
+          save_yesterday_downloads(downloads, version_th)
         end
       end
     end
