@@ -36,10 +36,10 @@ namespace :db do
   require_relative 'lib/no_sql_store'
 
   desc 'Create GemVersionDownload table'
-  task :migrate do
+  task :migrate => [:config] do
     begin
-      NoSqlStore.create_table(GemVersionDownload, 5, 6)
-      puts 'GemVersionDownload table created'
+      NoSqlStore.new.create_table(GemVersionDownload, 4, 5)
+      puts 'GemVersionDownload table created!'
     rescue Aws::DynamoDB::Errors::ResourceInUseException => e
       puts 'GemVersionDownload table already exists'
     rescue => e
