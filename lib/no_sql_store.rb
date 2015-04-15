@@ -13,7 +13,7 @@ class NoSqlStore
   def add_to_batch(record)
     @mutex.synchronize do
       @request_items[record.table] ||= []
-      @request_items[record.table] << { put_request: { item: record.put_items } }
+      @request_items[record.table] << { put_request: { item: record.items } }
       self
     end
   end
