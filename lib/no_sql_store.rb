@@ -28,15 +28,20 @@ class NoSqlStore
   end
 
   def create_table(model, read_capacity, write_capacity)
+    prototype = model.new
+    hash_key = prototype.hash_key
+    range_key = prototype.range_key
+    type = { String => 'S', Fixnum => 'N' }
+
     params = {
       attribute_definitions: [
-        { attribute_name: 'name_version', attribute_type: 'S' },
-        { attribute_name: 'date', attribute_type: 'S' }
+        { attribute_name: hash_key.name, attribute_type: type[hash_key.type] },
+        { attribute_name: range_key.name, attribute_type: type[range_key.type] }
       ],
       table_name: model.name,
       key_schema: [
-        { attribute_name: 'name_version', key_type: 'HASH' },
-        { attribute_name: 'date', key_type: 'RANGE' }
+        { attribute_name: prototype.hash_key.name, key_type: 'HASH' },
+        { attribute_name: prototype.range_key.name, key_type: 'RANGE' }
       ],
       provisioned_throughput: {
         read_capacity_units: read_capacity,
