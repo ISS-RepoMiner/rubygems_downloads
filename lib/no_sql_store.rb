@@ -18,12 +18,16 @@ class NoSqlStore
     end
   end
 
-  def self.put_single(record)
+  def save(record)
     @db.put_item(table_name: record.table, item: record.items)
   end
 
   def batch_save
     resp = @db.batch_write_item(request_items: @request_items)
+    @mutex.synchronize do
+      @request_items = {}
+    end
+    resp
     # puts({ request_items: @request_items })
   end
 
