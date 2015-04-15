@@ -3,16 +3,24 @@ class GemVersionDownload
   attr_reader :table
   attr_reader :put_items
 
+  attr_reader :hash_key
+  attr_reader :range_key
+  attr_reader :items
+
   def initialize
     @table = self.class.name
+    @hash_key = 'name_version'
+    @range_key = 'date'
+    @items = ['download_total', 'download_today']
   end
 
-  def add_put(gem_name, version, date, dl_total, dl_today)
+  def add_put(gem_name, version, date, *items)
     @put_items = {
-      'name_version' => "#{gem_name}[#{version}]",
-      'date' => date,
-      'download_total' => { value: dl_total },
-      'download_today' => { value: dl_today }
+      @hash_key => "#{gem_name}[#{version}]",
+      @range_key => date
     }
+    items.each.with_index do |value, i|
+      @put_items[@items[i]] = { value: value }
+    end
   end
 end

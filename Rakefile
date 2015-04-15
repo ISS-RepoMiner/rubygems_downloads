@@ -17,12 +17,33 @@ Rake::TestTask.new(name=:spec) do |t|
 end
 
 namespace :deploy do
+  task :production do
+    `git push heroku master`
+  end
+
   task :dangerous do
     branch = `git symbolic-ref -q HEAD`.strip.split('/').last
     if branch
       `git push -f heroku #{branch}:master`
     else
       puts "Current branch not found: #{branch}"
+    end
+  end
+end
+
+namespace :db do
+  require_relative 'model/gem_version_download'
+  require_relative 'lib/no_sql_store'
+
+  desc 'Create GemVersionDownload table'
+  task :migrate do
+    begin
+      NoSqlStore.create_table(GemVersionDownload, 5, 6)
+      puts 'GemVersionDownload table created'
+    rescue Aws::DynamoDB::Errors::ResourceInUseException => e
+      puts 'GemVersionDownload table already exists'
+    rescue => e
+      puts "Database error: #{e}"
     end
   end
 end
