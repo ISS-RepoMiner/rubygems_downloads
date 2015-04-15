@@ -11,6 +11,10 @@ GEM
     aws-sdk-resources (2.0.34)
       aws-sdk-core (= 2.0.34)
     builder (3.2.2)
+    concurrent-ruby (0.8.0)
+      ref (~> 1.0, >= 1.0.5)
+    concurrent-ruby-ext (0.8.0)
+      concurrent-ruby (~> 0.8.0)
     config_env (0.1.0)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
@@ -32,6 +36,7 @@ GEM
     rack-test (0.6.3)
       rack (>= 1.0)
     rake (10.4.2)
+    ref (1.0.5)
     safe_yaml (1.0.4)
     sinatra (1.4.6)
       rack (~> 1.4)
@@ -51,6 +56,7 @@ PLATFORMS
 
 DEPENDENCIES
   aws-sdk (~> 2)
+  concurrent-ruby-ext
   config_env
   gems
   httparty

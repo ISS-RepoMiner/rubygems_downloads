@@ -3,6 +3,8 @@ require 'httparty'
 require 'json'
 require 'config_env'
 require_relative 'lib/gem_map_queue'
+require_relative 'lib/no_sql_store'
+require_relative 'model/gem_version_download'
 
 module GemMiner
   class MiningService < Sinatra::Base
