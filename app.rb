@@ -3,6 +3,8 @@ require 'httparty'
 require 'json'
 require 'config_env'
 require_relative 'lib/gem_map_queue'
+require_relative 'lib/no_sql_store'
+require_relative 'model/gem_version_download'
 
 module GemMiner
   class MiningService < Sinatra::Base
@@ -61,10 +63,10 @@ module GemMiner
     post '/notification' do
       handle_notification do |msg|
         # TODO: handle notification here (example in next 5 lines)
-        puts "#{settings.gem_queue.messages_available} gems found"
+        # puts "#{settings.gem_queue.messages_available} gems found"
         settings.gem_queue.poll_batch(batch_size=10) do |gems_map|
           # TODO: handle gems here (example in next line)
-          puts "Gems: #{gems_map}"
+          # puts "Gems: #{gems_map}"
         end
       end
     end
