@@ -8,15 +8,16 @@ class GemVersionDownload
 
   attr_reader :items
 
-  def initialize
+  def initialize(gem_name, version, date, *items)
     @table = self.class.name
     @hash_key = Key.new('name_version', String)
     @range_key = Key.new('date', String)
     @non_key_items = ['download_total', 'download_today']
-    @items = {}
+
+    add_details(gem_name, version, date, *items)
   end
 
-  def add_put(gem_name, version, date, *items)
+  def add_details(gem_name, version, date, *items)
     @items = {
       @hash_key.name => "#{gem_name}[#{version}]",
       @range_key.name => date
