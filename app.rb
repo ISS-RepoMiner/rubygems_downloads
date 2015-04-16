@@ -13,20 +13,36 @@ module GemMiner
     end
 
     configure :production, :development do
-      set :gem_queue, GemMapQueue.new(ENV['SQS_GEM_QUEUE'])
+      # set :gem_queue, GemMapQueue.new(ENV['SQS_GEM_QUEUE'])
       enable :logging
     end
 
-    configure :test do
-      set :gem_queue, GemMapQueue.new
-    end
+    # configure :test do
+    #   set :gem_queue_class, GemMapQueue.new
+    # end
 
-    before do
-      settings.gem_queue.logger = logger
-    end
+    # before do
+    #   settings.gem_queue.logger = logger
+    # end
+
 
     get '/' do
       'GemMiner up and working<br> POST messages to /notification'
+    end
+
+    def self.mine_gems(queue_name, start_date, end_date, queue_object: nil)
+      gem_queue = queue_object || GemMapQueue.new(queue_name)
+      # TODO: handle notification here (example in next 5 lines)
+      puts "#{gem_queue.messages_available} gems found"
+
+      gem_queue.poll_batch do |gems_map|
+        # TODO: handle gems here (example in next line)
+        puts "Gems:"
+        gems_map.each do |jem|
+          puts "\t#{jem}"
+          # miner = GemMiner.new(jem)
+        end
+      end
     end
 
     def handle_notification(&_handler)
@@ -62,12 +78,11 @@ module GemMiner
     # Listen to SNS for subscription request or message notifications
     post '/notification' do
       handle_notification do |msg|
-        # TODO: handle notification here (example in next 5 lines)
-        # puts "#{settings.gem_queue.messages_available} gems found"
-        settings.gem_queue.poll_batch(batch_size=10) do |gems_map|
-          # TODO: handle gems here (example in next line)
-          # puts "Gems: #{gems_map}"
-        end
+        message = JSON.parse(msg)
+        queue_name = message['QueueName']
+        start_date = message['StartDate']
+        end_date = message['EndDate']
+        mine_gems(queue_name, start_date, end_date)
       end
     end
   end

@@ -12,7 +12,7 @@ class GemVersionDownload
     @table = self.class.name
     @hash_key = Key.new('name_version', String)
     @range_key = Key.new('date', String)
-    @non_key_items = ['download_total', 'download_today']
+    @non_key_items = %w(download_total download_today)
 
     add_details(gem_name, version, date, *items)
   end

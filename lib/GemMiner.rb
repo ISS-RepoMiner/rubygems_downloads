@@ -8,13 +8,13 @@ class GemMiner
   # initialize the class with the gem_name, input and output formulation
   def initialize(gem_name)
     @gem_name = gem_name
-    @all_downloads=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
-    @yesterday_downloads=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
-    get_all_versions
+    @all_downloads = Hash.new{ |h,k| h[k] = Hash.new(&h.default_proc) }
+    @yesterday_downloads = Hash.new{ |h,k| h[k] = Hash.new(&h.default_proc) }
+    all_versions
   end
 
   # scan all the versions of a gem
-  def get_all_versions
+  def all_versions
     @versions ||= Gems.versions @gem_name
     create_vers_list
   end
