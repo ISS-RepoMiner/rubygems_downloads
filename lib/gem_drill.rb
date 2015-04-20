@@ -3,25 +3,38 @@ require 'concurrent'
 
 module GemMiner
   # Node to mine: name of gem, start and end dats (date formats: "YYYY-MM-DD")
-  Node = Struct.new(:name, :start_date, :end_date)
+  Node = Struct.new(:name, :start_date, :end_date, :results, :errors) do
+    def initialize(*)
+      super
+      self.results = Hash.new{ |h,k| h[k] = Hash.new(&h.default_proc) }
+      self.errors = []
+    end
+  end
 
   # Gets gem information from rubygems.org (wrapper for Gems gem)
   class Drill
-    attr_reader :versions, :version_dates, :results
+    attr_reader :versions, :version_dates, :node
 
     # initialize the class with GemNode structure
-    def initialize(gem_node)
-      @node = gem_node
+    def initialize(gem_name: ,
+                   start_date: (Date.today-1).to_s,
+                   end_date: (Date.today-1).to_s)
+      @node = Node.new(gem_name, start_date, end_date)
       @lock = Mutex.new
       @all_downloads = Hash.new{ |h,k| h[k] = Hash.new(&h.default_proc) }
-      @results = Hash.new{ |h,k| h[k] = Hash.new(&h.default_proc) }
       all_versions
+    rescue => e
+      @node.errors << e
     end
 
     # scan all the versions of a gem
     def all_versions
-      @versions ||= Gems.versions @node.name
+      versions_list = Gems.versions @node.name
+      raise "Gem '#{@node.name}' not found" unless versions_list.is_a? Array
+      @versions = versions_list
       create_vers_list
+    rescue => e
+      @node.errors << e
     end
 
     def create_vers_list
@@ -45,6 +58,8 @@ module GemMiner
     def get_ver_downloads_by_dates(ver)
       end_date = @node.end_date || @node.start_date
       Gems.downloads(@node.name, ver, @node.start_date, end_date)
+    rescue => e
+      @node.errors << e
     end
 
     # get yesterday downloads of a specific version
@@ -62,7 +77,7 @@ module GemMiner
     def save_downloads(downloads, ver)
       downloads.each do |date, number|
         @lock.synchronize do
-          @results[@node.name][ver][date] = number if number > 0
+          @node.results[@node.name][ver][date] = number if number > 0
         end
       end
     end
@@ -82,7 +97,7 @@ module GemMiner
         downloads = get_ver_yesterday_downloads(ver)
         save_downloads(downloads, ver)
       end
-      @results
+      self
     end
 
     def downloads_autopool
@@ -93,33 +108,33 @@ module GemMiner
         end
       end
       threads.map(&:join)
-      @results
+      self
     end
 
     def downloads_fixedpool(num_threads=15)
       threads = Concurrent::FixedThreadPool.new(num_threads)
       @version_dates.keys.each do |version|
         threads.post(version) do |version_th|
-          downloads = get_ver_yesterday_downloads(version_th)
+          downloads = get_ver_downloads_by_dates(version_th)
           save_downloads(downloads, version_th)
         end
       end
       threads.shutdown
       threads.wait_for_termination
-      @results
+      self
     end
 
     def downloads_dynamicpool
       threads = Concurrent::CachedThreadPool.new
       @version_dates.keys.each do |version|
         threads.post(version) do |version_th|
-          downloads = get_ver_yesterday_downloads(version_th)
+          downloads = get_ver_downloads_by_dates(version_th)
           save_downloads(downloads, version_th)
         end
       end
       threads.shutdown
       threads.wait_for_termination
-      @results
+      self
     end
 
     # related information
@@ -133,6 +148,5 @@ module GemMiner
       gem_dependencies = Gems.dependencies [@node.name]
       gem_dependencies
     end
-
   end
 end
