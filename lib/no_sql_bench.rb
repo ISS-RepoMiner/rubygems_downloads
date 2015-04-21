@@ -27,7 +27,7 @@ def bench_puts
     bench.report("serial puts") do
       gems_serial.each do |batch|
         batch.each do |gem_name|
-          jem = GemVersionDownload.new(gem_name, '0.1.0', today, 12, 3)
+          jem = GemMiner::GemVersionDownload.new(gem_name, '0.1.0', today, 3)
           db.save(jem)
         end
       end
@@ -38,7 +38,7 @@ def bench_puts
       gems_serial_th.each do |batch|
         batch.each do |gem_name|
           threads << Thread.new do
-            jem = GemVersionDownload.new(gem_name, '0.1.0', today, 12, 3)
+            jem = GemMiner::GemVersionDownload.new(gem_name, '0.1.0', today, 3)
             db.save(jem)
           end
         end
@@ -49,7 +49,7 @@ def bench_puts
     bench.report("batch puts") do
       gem_batches.each do |batch|
         batch.each do |gem_name|
-          jem = GemVersionDownload.new(gem_name, '0.1.0', today, 12, 3)
+          jem = GemMiner::GemVersionDownload.new(gem_name, '0.1.0', today, 3)
           db.add_to_batch(jem)
         end
         batch_save_results << db.batch_save
@@ -60,10 +60,9 @@ def bench_puts
   batch_save_results
 end
 
-
 def demo_batch_adds
-  dropbox = GemVersionDownload.new('dropbox-api', '0.4.6', Date.today.to_s, 213, 4)
-  citesight = GemVersionDownload.new('citesight', '0.1.0', Date.today.to_s, 12, 3)
+  dropbox = GemMiner::GemVersionDownload.new('dropbox-api', '0.4.6', Date.today.to_s, 4)
+  citesight = GemMiner::GemVersionDownload.new('citesight', '0.1.0', Date.today.to_s, 3)
 
   db = NoSqlStore.new
   db.add_to_batch(dropbox)

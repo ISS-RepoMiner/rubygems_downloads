@@ -42,7 +42,7 @@ class NoSqlStore
         { attribute_name: hash_key.name, attribute_type: type[hash_key.type] },
         { attribute_name: range_key.name, attribute_type: type[range_key.type] }
       ],
-      table_name: model.name,
+      table_name: prototype.table,
       key_schema: [
         { attribute_name: prototype.hash_key.name, key_type: 'HASH' },
         { attribute_name: prototype.range_key.name, key_type: 'RANGE' }
