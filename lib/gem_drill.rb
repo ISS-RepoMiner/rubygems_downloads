@@ -77,7 +77,7 @@ module GemMiner
     def save_downloads(downloads, ver)
       downloads.each do |date, number|
         @lock.synchronize do
-          @node.results[@node.name][ver][date] = number if number > 0
+          @node.results[ver][date] = number if number > 0
         end
       end
     end

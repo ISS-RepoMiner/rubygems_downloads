@@ -3,8 +3,6 @@ require 'httparty'
 require 'json'
 require 'config_env'
 require_relative 'lib/gem_map_queue'
-require_relative 'lib/no_sql_store'
-require_relative 'model/gem_version_download'
 
 module GemMiner
   class MiningService < Sinatra::Base
@@ -80,9 +78,7 @@ module GemMiner
       handle_notification do |msg|
         message = JSON.parse(msg)
         queue_name = message['QueueName']
-        start_date = message['StartDate']
-        end_date = message['EndDate']
-        mine_gems(queue_name, start_date, end_date)
+        mine_gems(queue_name: queue_name)
       end
     end
   end
