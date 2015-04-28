@@ -5,6 +5,7 @@
 config_env do
   set 'AWS_ACCESS_KEY_ID', '[ACCESS_KEY_ID]'
   set 'AWS_SECRET_ACCESS_KEY', '[ACCESS_KEY]'
+  set 'SQS_GEM_QUEUE', 'GemMap'
 end
 
 config_env :production do

@@ -1,91 +1,140 @@
 require 'gems'
+require 'concurrent'
 
-=begin
-usage:
-first create a ~/.gem/credentials as below
----
-:rubygems_api_key: XXXXXXX
-=end
-
-# get { gem_name:=> { version:=> { date:=>download_times } } }
+# Gets gem information from rubygems.org (wrapper for Gems gem)
 class GemMiner
 
-	# initialize the class with the gem_name, input and output formulation
-	def initialize(gem_name)
-		@gem_name = gem_name
-		@hash=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
-		# @gem_info={}
-	end
+  attr_reader :versions, :version_dates, :yesterday_downloads
 
-	# scan all the versions of a gem
-	def get_vers_list
-		vers = Gems.versions @gem_name
-		vers_list={}
-		vers.each do |ver|
-			vers_list[ver["number"]]=ver["built_at"]
-		end
-		vers_list
-	end
+  # initialize the class with the gem_name, input and output formulation
+  def initialize(gem_name)
+    @gem_name = gem_name
+    @all_downloads=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
+    @yesterday_downloads=Hash.new{|h,k| h[k] = Hash.new(&h.default_proc)}
+    get_all_versions
+  end
 
-	# check the downloads of a version series
-	def get_ver_downloads(ver)
-		Gems.downloads @gem_name, ver
-	end
+  # scan all the versions of a gem
+  def get_all_versions
+    @versions ||= Gems.versions @gem_name
+    create_vers_list
+  end
 
-	def get_ver_history_downloads_series(ver)
-		vers_list=get_vers_list
-		Gems.downloads @gem_name, ver, vers_list[ver],Date.today-2
-	end
+  def create_vers_list
+    @version_dates = {}
+    @versions.map do |ver|
+      @version_dates[ver['number']] = ver['built_at']
+    end
+    @version_dates
+  end
 
+  # check the downloads of a version series
+  def get_ver_downloads(ver)
+    Gems.downloads @gem_name, ver
+  end
 
-	# check date downloads for specific version,date format "2014-12-05"
-	def get_ver_downloads_by_date(ver,date)
-		Gems.downloads @gem_name, ver, date,date
-	end
+  def get_ver_history_downloads_series(ver)
+    Gems.downloads @gem_name, ver, @versions[ver],Date.today-1
+  end
 
-	# get yesterday downloads of a specific version
-	def get_ver_yesterday_downloads (ver)
-		downloads = Gems.downloads @gem_name, ver, Date.today-2, Date.today-2
-	end
+  # check date downloads for specific version,date format "2014-12-05"
+  def get_ver_downloads_by_date(ver,date)
+    Gems.downloads @gem_name, ver, date, date
+  end
 
-	# save the downloads data to a structured hash_table
-	def save_to_hash(downloads,ver)
-		downloads.each do |k,v|
-			@hash[@gem_name][ver][k] = v
-		end
-	end
+  # get yesterday downloads of a specific version
+  def get_ver_yesterday_downloads (ver)
+    downloads = Gems.downloads @gem_name, ver, Date.today-1, Date.today-1
+  end
 
-	# call the method to get what needed in a hash format
-	def get_versions_downloads_list
-		vers_list = get_vers_list
+  # save the downloads data to a structured hash_table
+  def save_all_downloads(downloads,ver)
+    downloads.each do |k,v|
+      @all_downloads[@gem_name][ver][k] = v
+    end
+  end
 
-		vers_list.each do |ver,built_at|
-			downloads = get_ver_history_downloads_series(ver)
-			save_to_hash(downloads,ver)
-		end
-		@hash
-	end
+  def save_yesterday_downloads(downloads, ver)
+    downloads.each do |date, number|
+      @yesterday_downloads[@gem_name][ver][date] = number if number > 0
+    end
+  end
 
-	# call the method to get the updating downloads time ( yesterday )
-	def get_yesterday_downloads
-		vers_list = get_vers_list.keys
-		vers_list.each do |ver|
-			downloads = get_ver_yesterday_downloads(ver)
-			save_to_hash(downloads,ver)
-		end
-		@hash
-	end
+  # call the method to get what needed in a hash format
+  def get_versions_downloads_list
+    @version_dates.each do |ver, built_at|
+      downloads = get_ver_history_downloads_series(ver)
+      save_all_downloads(downloads, ver)
+    end
+    @all_downloads
+  end
 
-	# related information
-	def get_info
-		gem_info = Gems.info @gem_name
-		gem_info
-	end
+  # call the method to get the updating downloads time ( yesterday )
+  def get_yesterday_downloads
+    @version_dates.keys.each do |ver|
+      downloads = get_ver_yesterday_downloads(ver)
+      save_yesterday_downloads(downloads, ver)
+    end
+    @yesterday_downloads
+  end
 
-	# historical dependencies
-	def get_dependencies
-		gem_dependencies = Gems.dependencies [@gem_name]
-		gem_dependencies
-	end
+  def get_yesterday_downloads_autothreaded
+    threads = @version_dates.keys.map do |version|
+      Thread.new(version) do |version_th|
+        downloads = get_ver_yesterday_downloads(version_th)
+        lock.synchronize do
+          save_yesterday_downloads(downloads, version_th)
+        end
+      end
+    end
+    threads.map(&:join)
+    @yesterday_downloads
+  end
+
+  def get_yesterday_downloads_threaded(num_threads=15)
+    threads = Concurrent::FixedThreadPool.new(num_threads)
+    lock = Mutex.new
+
+    @version_dates.keys.each do |version|
+      threads.post(version) do |version_th|
+        downloads = get_ver_yesterday_downloads(version_th)
+        lock.synchronize do
+          save_yesterday_downloads(downloads, version_th)
+        end
+      end
+    end
+    threads.shutdown
+    threads.wait_for_termination
+    @yesterday_downloads
+  end
+
+  def get_yesterday_downloads_cachethreaded
+    threads = Concurrent::CachedThreadPool.new
+    lock = Mutex.new
+
+    @version_dates.keys.each do |version|
+      threads.post(version) do |version_th|
+        downloads = get_ver_yesterday_downloads(version_th)
+        lock.synchronize do
+          save_yesterday_downloads(downloads, version_th)
+        end
+      end
+    end
+    threads.shutdown
+    threads.wait_for_termination
+    @yesterday_downloads
+  end
+
+  # related information
+  def get_info
+    gem_info = Gems.info @gem_name
+    gem_info
+  end
+
+  # historical dependencies
+  def get_dependencies
+    gem_dependencies = Gems.dependencies [@gem_name]
+    gem_dependencies
+  end
 
 end
