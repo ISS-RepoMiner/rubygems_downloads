@@ -3,6 +3,7 @@ require 'concurrent'
 
 # Gets gem information from rubygems.org (wrapper for Gems gem)
 class GemMiner
+
   attr_reader :versions, :version_dates, :yesterday_downloads
 
   # initialize the class with the gem_name, input and output formulation
