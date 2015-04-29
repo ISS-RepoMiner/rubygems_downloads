@@ -3,7 +3,7 @@ require 'httparty'
 require 'json'
 require 'config_env'
 require_relative 'lib/gem_map_queue'
-# require_relative 'lib/gem_worker'
+require_relative 'lib/gem_worker'
 
 module GemMiner
   # Web Service that takes SNS notifications
@@ -17,38 +17,12 @@ module GemMiner
       enable :logging
     end
 
-    # configure :test do
-    #   set :gem_queue_class, GemMapQueue.new
-    # end
-
-    # before do
-    #   settings.gem_queue.logger = logger
-    # end
-
-
     get '/' do
       'GemMiner up and working<br> POST messages to /notification'
     end
 
-    def mine_gems_from_queue(queue_name=nil, queue_object: nil)
-      gem_queue = queue_object || GemMapQueue.new(queue_name)
-      # TODO: handle notification here (example in next 5 lines)
-      puts "#{gem_queue.messages_available} gems found"
-      #worker = GemWorker.new
-
-      gem_queue.poll_batch do |gems_map|
-        # TODO: handle gems here (example in next line)
-        puts "GEMSMAP: #{gems_map}"
-        puts "Gems:"
-        gems_map.each do |gem_json|
-          puts "\t#{gem_json}"
-
-          # gem_request = JSON.load(gem_json)
-          # worker.mine_and_save(gem_request['name'],
-          #                      gem_request['start_date'],
-          #                      gem_request['end_date'])
-        end
-      end
+    def mine_gems_from_queue(queue_name=nil)
+      WorkerPool.new(queue_name).perform
     end
 
     def handle_notification(&_handler)
@@ -66,10 +40,10 @@ module GemMiner
       when 'SubscriptionConfirmation'
         sns_confirm_url = sns_note['SubscribeURL']
         sns_confirmation = HTTParty.get sns_confirm_url
-        logger.info "SUBSCRIBE: URL: [#{sns_confirm_url}], Confirm: [#{sns_confirmation}]"
+        logger.info "SUBSCRIBE REQUEST: URL: [#{sns_confirm_url}], Confirm: [#{sns_confirmation}]"
         halt 403, 'Invalid SubscribeURL' unless sns_confirmation.code == 200
       when 'Notification'
-        logger.info "MESSAGE: Subject: [#{sns_note['Subject']}], Body: [#{sns_note['Message']}]"
+        logger.info "WORK REQUEST: Subject: [#{sns_note['Subject']}], Body: [#{sns_note['Message']}]"
         yield sns_note['Message']
       else
         fail "Invalid SNS Message Type (#{sns_msg_type})"

@@ -22,22 +22,21 @@ module GemMiner
       @node = Node.new(gem_name, start_date, end_date)
       @lock = Mutex.new
       @all_downloads = Hash.new{ |h,k| h[k] = Hash.new(&h.default_proc) }
-      all_versions
+      store_all_versions
     rescue => e
       @node.errors << e
     end
 
     # return all versions of a gem
-    def all_versions
-      versions_list = Gems.versions @node.name
-      raise "Gem '#{@node.name}' not found" unless versions_list.is_a? Array
-      @versions = versions_list
-      create_vers_list
+    def store_all_versions
+      @versions = Gems.versions @node.name
+      raise "Gem '#{@node.name}' not found" unless @versions.is_a? Array
+      store_versions_dates
     rescue => e
       @node.errors << e
     end
 
-    def create_vers_list
+    def store_versions_dates
       @version_dates = {}
       @versions.map do |ver|
         @version_dates[ver['number']] = ver['built_at']
