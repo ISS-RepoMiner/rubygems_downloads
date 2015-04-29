@@ -3,30 +3,26 @@ require 'httparty'
 require 'json'
 require 'config_env'
 require_relative 'lib/gem_map_queue'
-require_relative 'lib/no_sql_store'
-require_relative 'model/gem_version_download'
+require_relative 'lib/gem_worker'
 
 module GemMiner
+  # Web Service that takes SNS notifications
   class MiningService < Sinatra::Base
     configure :development, :test do
       ConfigEnv.path_to_config("#{__dir__}/config/config_env.rb")
     end
 
     configure :production, :development do
-      set :gem_queue, GemMapQueue.new(ENV['SQS_GEM_QUEUE'])
+      # set :gem_queue, GemMapQueue.new(ENV['SQS_GEM_QUEUE'])
       enable :logging
-    end
-
-    configure :test do
-      set :gem_queue, GemMapQueue.new
-    end
-
-    before do
-      settings.gem_queue.logger = logger
     end
 
     get '/' do
       'GemMiner up and working<br> POST messages to /notification'
+    end
+
+    def mine_gems_from_queue(queue_name=nil)
+      WorkerPool.new(queue_name).perform
     end
 
     def handle_notification(&_handler)
@@ -44,10 +40,10 @@ module GemMiner
       when 'SubscriptionConfirmation'
         sns_confirm_url = sns_note['SubscribeURL']
         sns_confirmation = HTTParty.get sns_confirm_url
-        logger.info "SUBSCRIBE: URL: [#{sns_confirm_url}], Confirm: [#{sns_confirmation}]"
+        logger.info "SUBSCRIBE REQUEST: URL: [#{sns_confirm_url}], Confirm: [#{sns_confirmation}]"
         halt 403, 'Invalid SubscribeURL' unless sns_confirmation.code == 200
       when 'Notification'
-        logger.info "MESSAGE: Subject: [#{sns_note['Subject']}], Body: [#{sns_note['Message']}]"
+        logger.info "WORK REQUEST: Subject: [#{sns_note['Subject']}], Body: [#{sns_note['Message']}]"
         yield sns_note['Message']
       else
         fail "Invalid SNS Message Type (#{sns_msg_type})"
@@ -62,12 +58,9 @@ module GemMiner
     # Listen to SNS for subscription request or message notifications
     post '/notification' do
       handle_notification do |msg|
-        # TODO: handle notification here (example in next 5 lines)
-        # puts "#{settings.gem_queue.messages_available} gems found"
-        settings.gem_queue.poll_batch(batch_size=10) do |gems_map|
-          # TODO: handle gems here (example in next line)
-          # puts "Gems: #{gems_map}"
-        end
+        message = JSON.parse(msg)
+        queue_name = message['QueueName']
+        mine_gems_from_queue(queue_name)
       end
     end
   end

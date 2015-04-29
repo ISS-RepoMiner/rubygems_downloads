@@ -10,6 +10,9 @@ gem 'thin'
 gem 'httparty'
 gem 'json'
 
+gem 'gems'
+gem 'concurrent-ruby-ext'
+
 group :test do
   gem 'minitest'
   gem 'webmock'
@@ -18,5 +21,6 @@ group :test do
   gem 'rake'
 end
 
-gem 'gems'
-gem 'concurrent-ruby-ext'
+group :development do
+  gem 'tux'
+end

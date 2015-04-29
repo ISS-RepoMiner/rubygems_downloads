@@ -36,14 +36,25 @@ namespace :db do
   require_relative 'lib/no_sql_store'
 
   desc 'Create GemVersionDownload table'
-  task :migrate => [:config] do
+  task :create => [:config] do
     begin
-      NoSqlStore.new.create_table(GemVersionDownload, 4, 5)
+      NoSqlStore.new.create_table(GemMiner::GemVersionDownload, 4, 5)
       puts 'GemVersionDownload table created!'
     rescue Aws::DynamoDB::Errors::ResourceInUseException => e
       puts 'GemVersionDownload table already exists'
     rescue => e
       puts "Database error: #{e}"
     end
+  end
+end
+
+namespace :run do
+  task :staging do
+    sh 'bundle exec rackup -o 0.0.0.0 &'
+  end
+
+  task :killme do
+    rackup_id = `ps a | grep rackup`.split.first
+    sh "kill -9 #{rackup_id}"
   end
 end
