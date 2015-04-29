@@ -29,7 +29,7 @@ module GemMiner
       'GemMiner up and working<br> POST messages to /notification'
     end
 
-    def self.mine_gems(queue_name: nil, queue_object: nil)
+    def mine_gems(queue_name: nil, queue_object: nil)
       gem_queue = queue_object || GemMapQueue.new(queue_name)
       # TODO: handle notification here (example in next 5 lines)
       puts "#{gem_queue.messages_available} gems found"
