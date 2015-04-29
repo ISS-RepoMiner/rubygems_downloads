@@ -27,6 +27,7 @@ class NoSqlStore
 
   def batch_flush
     @mutex.synchronize do
+      return if @request_items.length == 0
       resp = @db.batch_write_item(request_items: @request_items)
       @request_items = {}
       @unprocessed_items << resp[:unprocessed_items] if resp[:unprocessed_items]

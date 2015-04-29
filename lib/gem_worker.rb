@@ -3,6 +3,7 @@ require_relative 'gem_map_queue'
 require_relative 'gem_drill.rb'
 require_relative 'no_sql_store'
 require_relative '../model/gem_version_download'
+require 'concurrent'
 
 # Wraps the mining and storing of gems
 module GemMiner
@@ -38,13 +39,21 @@ module GemMiner
     end
 
     def perform
-      worker = GemWorker.new
       @gem_queue.poll_batch do |gems_map|
+        threads = Concurrent::CachedThreadPool.new
+        puts "MAP: #{gems_map}"
         gems_map.each do |gem_json|
-          puts "\t#{gem_json}"
-          gem_h = JSON.load(gem_json)
-          worker.mine_and_save(gem_h['name'], gem_h['start_date'], gem_h['end_date'])
+          threads.post do
+            worker = GemWorker.new
+            puts "\t#{gem_json}"
+            gem_h = JSON.load(gem_json)
+            worker.mine_and_save(gem_h['name'], gem_h['start_date'], gem_h['end_date'])
+            puts "\t#{gem_h['name']} end"
+          end
         end
+
+        threads.shutdown
+        threads.wait_for_termination
       end
     end
   end
