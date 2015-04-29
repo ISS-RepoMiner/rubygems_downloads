@@ -28,6 +28,10 @@ module GemMiner
       fail ex
     end
 
+    def send_message(message)
+      @sqs.send_message(queue_url: @queue_url, message_body: message)
+    end
+
     def messages_available
       attrs = @sqs.get_queue_attributes(
         queue_url: @queue_url,

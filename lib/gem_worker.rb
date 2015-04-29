@@ -1,7 +1,7 @@
-require './app'
-require_relative 'lib/gem_drill.rb'
-require_relative 'lib/no_sql_store'
-require_relative 'model/gem_version_download'
+# require './app'
+require_relative 'gem_drill.rb'
+require_relative 'no_sql_store'
+require_relative '../model/gem_version_download'
 
 # Wraps the mining and storing of gems
 class GemWorker
