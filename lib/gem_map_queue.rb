@@ -1,6 +1,7 @@
 require 'aws-sdk'
 
 module GemMiner
+  # Handles all communication with SQS queues
   class GemMapQueue
     attr_writer :logger
     SQS_MAX_BATCH_SIZE = 10

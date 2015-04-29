@@ -67,5 +67,5 @@ def demo_batch_adds
   db = NoSqlStore.new
   db.add_to_batch(dropbox)
   db.add_to_batch(citesight)
-  results = db.batch_save
+  results = db.batch_flush
 end

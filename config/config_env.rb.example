@@ -3,17 +3,16 @@
 # 2. replace [*] below with corresponding keys/numbers/ids
 
 config_env do
-  set 'AWS_ACCESS_KEY_ID', '[ACCESS_KEY_ID]'
-  set 'AWS_SECRET_ACCESS_KEY', '[ACCESS_KEY]'
-  set 'SQS_GEM_QUEUE', 'GemMap'
+  set 'AWS_ACCESS_KEY_ID', '[AWS ACCESS KEY]'
+  set 'AWS_SECRET_ACCESS_KEY', '[AWS SECRET KEY]'
+
+  # AWS SNS Topic for messages that are pushed to our service
+  set 'WakeupTopicArn', '[TOPIC ARN]'
 end
 
 config_env :production do
   # AWS Region: US East (N. Virginia)
   set 'AWS_REGION', 'us-east-1'
-
-  # AWS SNS Topic for messages that are pushed to our service
-  set 'TopicArn', 'arn:aws:sns:us-east-1:[ACCOUNT_NUMBER]:ruby_gem_miner_wakeup'
 end
 
 config_env :development, :test do

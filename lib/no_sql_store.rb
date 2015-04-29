@@ -38,7 +38,7 @@ class NoSqlStore
     add_to_batch(record)
     batch_length = @mutex.synchronize { @request_items[record.table].length }
     puts "Items: #{batch_length}\n"
-    batch_flush if batch_length == 25
+    batch_flush if batch_length == MAX_BATCH_SIZE
   end
 
   def create_table(model, read_capacity, write_capacity)

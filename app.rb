@@ -5,6 +5,7 @@ require 'config_env'
 require_relative 'lib/gem_map_queue'
 
 module GemMiner
+  # Web Service that takes SNS notifications
   class MiningService < Sinatra::Base
     configure :development, :test do
       ConfigEnv.path_to_config("#{__dir__}/config/config_env.rb")
@@ -32,13 +33,18 @@ module GemMiner
       gem_queue = queue_object || GemMapQueue.new(queue_name)
       # TODO: handle notification here (example in next 5 lines)
       puts "#{gem_queue.messages_available} gems found"
+      # worker = GemWorker.new
 
       gem_queue.poll_batch do |gems_map|
         # TODO: handle gems here (example in next line)
         puts "Gems:"
         gems_map.each do |jem|
           puts "\t#{jem}"
-          # miner = GemMiner.new(jem)
+
+          # gem_request = JSON.parse(jem)
+          # worker.mine_and_save(gem_request['name'],
+          #                      gem_request['start_date'],
+          #                      gem_request['end_date'])
         end
       end
     end

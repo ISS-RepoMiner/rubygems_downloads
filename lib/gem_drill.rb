@@ -16,9 +16,9 @@ module GemMiner
     attr_reader :versions, :version_dates, :node
 
     # initialize the class with GemNode structure
-    def initialize(gem_name: ,
-                   start_date: (Date.today-1).to_s,
-                   end_date: (Date.today-1).to_s)
+    def initialize(gem_name,
+                   start_date = (Date.today-1).to_s,
+                   end_date = (Date.today-1).to_s)
       @node = Node.new(gem_name, start_date, end_date)
       @lock = Mutex.new
       @all_downloads = Hash.new{ |h,k| h[k] = Hash.new(&h.default_proc) }
@@ -27,7 +27,7 @@ module GemMiner
       @node.errors << e
     end
 
-    # scan all the versions of a gem
+    # return all versions of a gem
     def all_versions
       versions_list = Gems.versions @node.name
       raise "Gem '#{@node.name}' not found" unless versions_list.is_a? Array
