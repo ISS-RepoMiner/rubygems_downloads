@@ -50,7 +50,7 @@ end
 
 namespace :run do
   task :staging do
-    sh 'bundle exec rackup -o 0.0.0.0'
+    sh 'bundle exec rackup -o 0.0.0.0 &'
   end
 
   task :killme do
