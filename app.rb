@@ -3,6 +3,7 @@ require 'httparty'
 require 'json'
 require 'config_env'
 require_relative 'lib/gem_map_queue'
+require_relative 'lib/gem_worker'
 
 module GemMiner
   # Web Service that takes SNS notifications
@@ -33,7 +34,7 @@ module GemMiner
       gem_queue = queue_object || GemMapQueue.new(queue_name)
       # TODO: handle notification here (example in next 5 lines)
       puts "#{gem_queue.messages_available} gems found"
-      # worker = GemWorker.new
+      worker = GemWorker.new
 
       gem_queue.poll_batch do |gems_map|
         # TODO: handle gems here (example in next line)
@@ -41,10 +42,10 @@ module GemMiner
         gems_map.each do |jem|
           puts "\t#{jem}"
 
-          # gem_request = JSON.parse(jem)
-          # worker.mine_and_save(gem_request['name'],
-          #                      gem_request['start_date'],
-          #                      gem_request['end_date'])
+          gem_request = JSON.parse(jem)
+          worker.mine_and_save(gem_request['name'],
+                               gem_request['start_date'],
+                               gem_request['end_date'])
         end
       end
     end
