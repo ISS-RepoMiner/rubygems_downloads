@@ -44,13 +44,15 @@ module GemMiner
 
     def poll(&_message_handler)
       poller = Aws::SQS::QueuePoller.new(@queue_url)
-      poller.poll(max_number_of_messages: batch_size,
-                  wait_time_seconds: 0,
+      poller.poll(wait_time_seconds: 0,
                   idle_timeout: 5) do |msg|
-        yield msg.body
+        begin
+          job = msg.body
+          yield job
+        rescue => e
+          log_error(e, "Failed while processing queue on job: #{job}")
+        end
       end
-    rescue => e
-      log_error(e, 'Failed while polling queue')
     end
 
     def poll_batch(batch_size = SQS_MAX_BATCH_SIZE, &_message_handler)

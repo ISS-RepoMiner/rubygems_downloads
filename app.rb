@@ -22,7 +22,7 @@ module GemMiner
     end
 
     def mine_gems_from_queue(queue_name=nil)
-      WorkerPool.new(queue_name).perform
+      WorkerPool.new(queue_name).perform_async
     end
 
     def handle_notification(&_handler)
@@ -60,7 +60,11 @@ module GemMiner
       handle_notification do |msg|
         message = JSON.parse(msg)
         queue_name = message['QueueName']
-        mine_gems_from_queue(queue_name)
+        if (queue_name.nil? or queue_name.empty?)
+          logger.info "QueueName for job not specified"
+        else
+          mine_gems_from_queue(queue_name)
+        end
       end
     end
   end

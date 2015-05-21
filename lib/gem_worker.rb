@@ -48,12 +48,28 @@ module GemMiner
             puts "\t#{gem_json}"
             gem_h = JSON.load(gem_json)
             worker.mine_and_save(gem_h['name'], gem_h['start_date'], gem_h['end_date'])
-            puts "\t#{gem_h['name']} end"
+            puts "\t--#{gem_h['name']} end"
           end
         end
 
         threads.shutdown
         threads.wait_for_termination
+      end
+    end
+
+    def perform_async(num_engines=20)
+      pool = Concurrent::CachedThreadPool.new
+
+      num_engines.times do |engine_num|
+        pool.post do
+          @gem_queue.poll do |gem_json|
+            worker = GemWorker.new
+            puts "\t[eng #{engine_num}]#{gem_json}"
+            gem_h = JSON.load(gem_json)
+            worker.mine_and_save(gem_h['name'], gem_h['start_date'], gem_h['end_date'])
+            puts "\t--[eng #{engine_num}]#{gem_h['name']} end"
+          end
+        end
       end
     end
   end
