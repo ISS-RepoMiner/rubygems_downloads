@@ -23,9 +23,9 @@ module GemMiner
         err = ex.is_a?(Aws::SQS::Errors::ServiceError) ? 'QUEUE_ERROR' : 'ERROR'
         @logger.error("#{err}: #{description}")
       else
-        puts description
+        puts "#{ex}: #{description}"
       end
-      fail ex
+      # fail ex
     end
 
     def send_message(message)
@@ -50,7 +50,7 @@ module GemMiner
           job = msg.body
           yield job
         rescue => e
-          log_error(e, "Failed while processing queue on job: #{job}")
+          log_error(e, "Failed while processing job: #{job}")
         end
       end
     end

@@ -61,18 +61,6 @@ module GemMiner
       @node.errors << e
     end
 
-    # get yesterday downloads of a specific version
-    def get_ver_yesterday_downloads(ver)
-      downloads = Gems.downloads @node.name, ver, Date.today-1, Date.today-1
-    end
-
-    # # save the downloads data to a structured hash_table
-    # def save_all_downloads(downloads,ver)
-    #   downloads.each do |k,v|
-    #     @all_downloads[@node.name][ver][k] = v
-    #   end
-    # end
-
     def save_downloads(downloads, ver)
       downloads.each do |date, number|
         @lock.synchronize do
@@ -90,49 +78,16 @@ module GemMiner
       @all_downloads
     end
 
-    # call the method to get the updating downloads time ( yesterday )
-    def downloads
-      @version_dates.keys.each do |ver|
-        downloads = get_ver_yesterday_downloads(ver)
-        save_downloads(downloads, ver)
-      end
-      self
-    end
-
-    def downloads_autopool
-      threads = @version_dates.keys.map do |version|
-        Thread.new(version) do |version_th|
-          downloads = get_ver_downloads_by_dates(version_th)
-          save_downloads(downloads, version_th)
-        end
-      end
-      threads.map(&:join)
-      self
-    end
-
-    def downloads_fixedpool(num_threads=15)
-      threads = Concurrent::FixedThreadPool.new(num_threads)
+    def download_versions
+      pool = Concurrent::CachedThreadPool.new
       @version_dates.keys.each do |version|
-        threads.post(version) do |version_th|
-          downloads = get_ver_downloads_by_dates(version_th)
-          save_downloads(downloads, version_th)
+        pool.post(version) do |version_for_thread|
+          downloads = get_ver_downloads_by_dates(version_for_thread)
+          save_downloads(downloads, version_for_thread)
         end
       end
-      threads.shutdown
-      threads.wait_for_termination
-      self
-    end
-
-    def downloads_dynamicpool
-      threads = Concurrent::CachedThreadPool.new
-      @version_dates.keys.each do |version|
-        threads.post(version) do |version_th|
-          downloads = get_ver_downloads_by_dates(version_th)
-          save_downloads(downloads, version_th)
-        end
-      end
-      threads.shutdown
-      threads.wait_for_termination
+      pool.shutdown
+      pool.wait_for_termination
       self
     end
 
@@ -148,4 +103,39 @@ module GemMiner
       gem_dependencies
     end
   end
+
+  ## LEGACY METHODS
+  #
+  # call the method to get the updating downloads time ( yesterday )
+  # def downloads
+  #   @version_dates.keys.each do |ver|
+  #     downloads = get_ver_yesterday_downloads(ver)
+  #     save_downloads(downloads, ver)
+  #   end
+  #   self
+  # end
+  #
+  # def downloads_autopool
+  #   threads = @version_dates.keys.map do |version|
+  #     Thread.new(version) do |version_th|
+  #       downloads = get_ver_downloads_by_dates(version_th)
+  #       save_downloads(downloads, version_th)
+  #     end
+  #   end
+  #   threads.map(&:join)
+  #   self
+  # end
+  #
+  # def downloads_fixedpool(num_threads=15)
+  #   threads = Concurrent::FixedThreadPool.new(num_threads)
+  #   @version_dates.keys.each do |version|
+  #     threads.post(version) do |version_th|
+  #       downloads = get_ver_downloads_by_dates(version_th)
+  #       save_downloads(downloads, version_th)
+  #     end
+  #   end
+  #   threads.shutdown
+  #   threads.wait_for_termination
+  #   self
+  # end
 end

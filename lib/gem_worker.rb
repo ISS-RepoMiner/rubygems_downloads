@@ -19,7 +19,7 @@ module GemMiner
 
     def mine_gem_for_node(gem_name, start_date, end_date)
       jem = GemMiner::Drill.new(gem_name, start_date, end_date)
-      jem.downloads_dynamicpool.node
+      jem.download_versions.node
     end
 
     def save_node(node)
