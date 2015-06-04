@@ -49,14 +49,15 @@ module GemMiner
       Gems.downloads @node.name, ver
     end
 
-    def get_ver_history_downloads_series(ver)
-      Gems.downloads @node.name, ver, @versions[ver], Date.today-1
-    end
+    # def get_ver_history_downloads_series(ver)
+    #   Gems.downloads @node.name, ver, @versions[ver], Date.today-1
+    # end
 
     # check date downloads for specific version, by date range
     def get_ver_downloads_by_dates(ver)
       end_date = @node.end_date || @node.start_date
-      Gems.downloads(@node.name, ver, @node.start_date, end_date)
+      downloads = Gems.downloads(@node.name, ver, @node.start_date, end_date)
+      downloads.is_a?(String) ? fail("No gem found") : downloads
     rescue => e
       @node.errors << e
     end
@@ -70,13 +71,13 @@ module GemMiner
     end
 
     # call the method to get what needed in a hash format
-    def get_versions_downloads_list
-      @version_dates.each do |ver, built_at|
-        downloads = get_ver_history_downloads_series(ver)
-        save_all_downloads(downloads, ver)
-      end
-      @all_downloads
-    end
+    # def get_versions_downloads_list
+    #   @version_dates.each do |ver, built_at|
+    #     downloads = get_ver_history_downloads_series(ver)
+    #     save_all_downloads(downloads, ver)
+    #   end
+    #   @all_downloads
+    # end
 
     def download_versions
       pool = Concurrent::CachedThreadPool.new

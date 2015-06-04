@@ -14,7 +14,7 @@ module GemMiner
 
     def mine_and_save(gem_name, start_date, end_date)
       node = mine_gem_for_node(gem_name, start_date, end_date)
-      save_node(node)
+      save_node(node) if node.errors.empty?
     end
 
     def mine_gem_for_node(gem_name, start_date, end_date)
