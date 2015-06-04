@@ -49,12 +49,11 @@ namespace :db do
 end
 
 namespace :run do
-  task :staging do
+  task :rackup do
     sh 'bundle exec rackup -o 0.0.0.0 &'
   end
 
   task :killme do
-    rackup_id = `ps a | grep rackup`.split.first
-    sh "kill -9 #{rackup_id}"
+    sh "pkill -9 rackup"
   end
 end
