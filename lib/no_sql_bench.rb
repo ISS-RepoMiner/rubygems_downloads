@@ -2,7 +2,7 @@ require 'benchmark'
 require_relative '../app.rb'
 
 NUM_BATCHES = 5
-BATCH_SIZE = 10
+BATCH_SIZE = 20
 
 def fake_gem_batches(num_batches, batch_size)
   letters = ('a'..'z').take(26)
@@ -23,8 +23,8 @@ def bench_puts
   gem_batches = fake_gem_batches(NUM_BATCHES, BATCH_SIZE)
   batch_save_results = []
 
-  Benchmark.bmbm(15) do |bench|
-    bench.report("serial puts") do
+  Benchmark.bm(20) do |bench|
+    bench.report("put_item (serial)") do
       gems_serial.each do |batch|
         batch.each do |gem_name|
           jem = GemMiner::GemVersionDownload.new(gem_name, '0.1.0', today, 3)
@@ -33,7 +33,7 @@ def bench_puts
       end
     end
 
-    bench.report("serial (multi)") do
+    bench.report("put_item (threaded)") do
       threads = []
       gems_serial_th.each do |batch|
         batch.each do |gem_name|
@@ -46,13 +46,13 @@ def bench_puts
       threads.map(&:join)
     end
 
-    bench.report("batch puts") do
+    bench.report("batch_write") do
       gem_batches.each do |batch|
         batch.each do |gem_name|
           jem = GemMiner::GemVersionDownload.new(gem_name, '0.1.0', today, 3)
           db.add_to_batch(jem)
         end
-        batch_save_results << db.batch_save
+        batch_save_results << db.batch_flush
       end
     end
   end
